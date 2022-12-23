@@ -64,3 +64,64 @@ Tactic* ReactiveAdaptationManager::evaluate() {
 
     return pMacroTactic;
 }
+
+
+
+// utilisationUpperThreshold = knowledge.get(utilisationUpperThreshold)
+// utilisationLowerThreshold = knowledge.get(utilisationLowerThreshold)
+// historyOfRequests = knowledge.get(historyOfRequests)
+
+// requestRateForecast = forecastFutureRequests(historyOfRequests)
+// utilisationForecast = translateRequestsToUtil(requestRateForecast)
+// timeUntilNeed, predictedUtilisation = analyseUtilForecast(utilisationForecast)
+
+// if predictedUtilisation > utilisationThresholdUpper :
+//     if now - timeUntilNeed <= min(timeToSpawn, executionCycleDuration):
+//         addServer()
+
+// thresholdViolationUpper = 0
+// thresholdViolationLower = 0
+
+// function addServer(isServerBooting, numberOfServers, maxServers):
+//     if (!isServerBooting && numberOfServers < maxServers):
+//         addServerTactic()
+//     else if dimmer > 0:
+//         decreaseDimmer()
+
+// function removeServer(spareUtilization, dimmer, isServerBooting, numberOfServers):
+//     if (spareUtilization > 1):
+//         if (dimmer < 1)
+//             increaseDimmer()
+//         else (!isServerBooting && numberOfServers > 1):
+//             removeServerTactic()
+
+// # This is reactive
+// if currentUtil > utilisationThreshold:
+//     if thresholdViolationUpper >= 1:
+//         addServer()
+//         thresholdViolationUpper = 0
+//         thresholdViolationLower = 0
+//     else:
+//         thresholdViolationUpper++
+//     return
+// else if currentUtil < utilisationLowerThreshold:
+//     if thresholdViolationLower >= 1:
+//         removeServer()
+//         thresholdViolationLower = 0
+//         thresholdViolationUpper = 0
+//     else:
+//         thresholdViolationLower++
+//     return
+
+// // Maybe add this before translation to avg system util 
+// // requestRateForecastMeans = transformToMean(requestRateForecast)
+
+
+// # This is proactive
+// requestRateForecast = forecastFutureRequests(historyOfRequests)
+// utilisationForecast = translateRequestsToUtil(requestRateForecast)
+// timeUntilNeed, predictedUtilisation = analyseUtilForecast(utilisationForecast)
+
+// if predictedUtilisation > utilisationThresholdUpper :
+//     if now - timeUntilNeed <= min(timeToSpawn, 3 seconds):
+//         addServer()
