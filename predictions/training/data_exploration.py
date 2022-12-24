@@ -57,12 +57,12 @@ def get_train_test(data: pd.DataFrame):
 
 def train_model(train_df, config):
     """
-    Creates an ARIMA model with p, q, d as specified by the provided <config> and trains the model on the provided
+    Creates an ARIMA model with p, d, q as specified by the provided <config> and trains the model on the provided
     data contained within <train_df>.
 
     Arguments:
         traing_df (Pandas.DataFrame): the data entries on which to train an ARIMA model
-        config (tuple): values for p, q, and d to use to create an ARIMA model
+        config (tuple): values for p, d, and q to use to create an ARIMA model
     """
     model = ARIMA(train_df, order=config)
     fitted_model = model.fit()
@@ -94,12 +94,12 @@ def get_optimal_model(data, data_type):
 
 def get_best_config(results):
     """
-    Returns the configuration (i.e. set of p, q, d values) that corresponds to the lowest sum of RMSE measurements
+    Returns the configuration (i.e. set of p, d, q values) that corresponds to the lowest sum of RMSE measurements
     between ARIMA model predictions and the actual values, stemming from the test_df, along with the lowest value
     itself.
 
     Arguments:
-        results (dict): dictionary with keys being the different configuration sets (p, q, d) and values the measured
+        results (dict): dictionary with keys being the different configuration sets (p, d, q) and values the measured
         RMSE values between ARIMA predictions and actual values
     """
     return min(
@@ -173,7 +173,7 @@ def online_predictions(data, no_predictions: int = 10):
 
 def offline_model():
     """
-    Loads datasets stored in the training_data folder and determines which (p, q, d) ARIMA configuration minimises the
+    Loads datasets stored in the training_data folder and determines which (p, d, q) ARIMA configuration minimises the
     RMSE for each dataset.
     """
     ds_arrival_rate = load_data("../../training_data", data_types["arrivalRate"])

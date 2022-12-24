@@ -21,6 +21,9 @@
 
 #define RT_THRESHOLD omnetpp::getSimulation()->getSystemModule()->par("responseTimeThreshold").doubleValue()
 
+#define SU_UPPER_THRESHOLD 
+#define SU_LOWER_THRESHOLD 
+
 /*
  * MAX_SERVICE_RATE is the max number of requests/sec a single server can
  * process with normal service.
