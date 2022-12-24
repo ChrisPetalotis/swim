@@ -107,7 +107,7 @@ def get_best_config(results):
     )
 
 
-def find_best_config(datasets: list[str], data_type):
+def find_best_config(datasets: list[str], data_type: str):
     """
     Finds the configuration that minimises the RMSE across all provided <datasets>.
     For each dataset from the provided <datasets>, it iterates over each configuration set, stored in the
@@ -137,7 +137,41 @@ def find_best_config(datasets: list[str], data_type):
     return best_config, best_rmse
 
 
-def offline_model_config():
+def offline_predictions(config, data, no_predictions: int = 10):
+    train_df, test_df = get_train_test(data)
+    fitted_model = train_model(train_df, config)
+    predictions = fitted_model.forecast(steps=no_predictions)
+
+    return predictions
+
+
+def online_rmse(datasets: list[str], data_type: str):
+    rmses = []
+    for dataset in data_df:
+        train_df, test_df = get_train_test(dataset)
+
+        best_model = get_optimal_model(train_df, data_type)
+
+        # Predictions is an array of predicted values and confindence intervals that correspond to each forecasted value
+        predictions = best_model.predict(len(test_df), return_conf_int=True)
+        rmse = sqrt(
+            mean_squared_error(test_df[data_type].values, predictions[0].values)
+        )
+
+        rmses.append(rmse)
+
+    return best_model.to_dict()["order"], sum(rmses) / len(rmses)
+
+
+def online_predictions(data, no_predictions: int = 10):
+    train_df, test_df = get_train_test(dataset)
+    best_model = get_optimal_model(train_df, data_type)
+    predictions = best_model.predict(no_predictions, return_conf_int=True)
+
+    return predictions
+
+
+def offline_model():
     """
     Loads datasets stored in the training_data folder and determines which (p, q, d) ARIMA configuration minimises the
     RMSE for each dataset.
@@ -154,29 +188,25 @@ def offline_model_config():
     }
 
 
-def online_predictions(data_type, data=None, no_predictions=None):
-    data_df = load_data("../../training_data", data_types[data_type])
+def online_model(data=None, no_predictions=None):
+    if data == None:
+        ds_arrival_rate = load_data("../../training_data", data_types["arrivalRate"])
+        ds_service_time = load_data("../../training_data", data_types["avgServiceTime"])
 
-    rmses = []
-    for dataset in data_df:
-        train_df, test_df = get_train_test(dataset)
+        best_config_ar, best_rmse_ar = online_rmse(ds_arrival_rate, "arrivalRate")
+        best_config_st, best_rmse_st = online_rmse(ds_service_time, "avgServiceTime")
 
-        best_model = get_optimal_model(train_df, data_type)
-
-        # Predictions is an array of predicted values and confindence intervals that correspond to each forecasted value
-        predictions = best_model.predict(len(test_df), return_conf_int=True)
-        rmse = sqrt(mean_squared_error(test_df[data_type].values, predictions[0].values))
-
-        rmses.append(rmse)
-    return rmses
+        return {
+            "arrival_rate": {"best_config": best_config_ar, "best_rmse": best_rmse_ar},
+            "service_time": {"best_config": best_config_st, "best_rmse": best_rmse_st},
+        }
+    else:
+        return online_predictions(data, no_predictions)
 
 
 if __name__ == "__main__":
-    print('Results using offline model condifuration:')
+    print("Results using offline model condifuration:")
     print(offline_model_config)
 
-    print("\nResults using online model configuration for:")
-    print("   - arrival rate")
-    print(online_predictions("arrivalRate"))
-    print("   - service time")
-    print(online_predictions("avgServiceTime"))
+    print("\nResults using online model configuration:")
+    print(online_predictions())
