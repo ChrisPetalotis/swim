@@ -206,7 +206,7 @@ def online_model(data=None, no_predictions=None):
 
 if __name__ == "__main__":
     print("Results using offline model condifuration:")
-    print(offline_model_config)
+    print(offline_model())
 
     print("\nResults using online model configuration:")
     print(online_predictions())
