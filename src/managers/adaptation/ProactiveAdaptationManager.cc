@@ -70,8 +70,7 @@ Tactic *ProactiveAdaptationManager::evaluate() {
 
     // This is proactive
     // We should be getting the predictedUtilisation from python here
-    double predictedUtilisation = predictFutureUtilization(pModel->getServiceTimeHistory(),
-                                                           pModel->getEnvironment().arrivalRateHistory)
+    predictFutureUtilization(pModel->getServiceTimeHistory(), pModel->getEnvironment().arrivalRateHistory)
 
     // If timeUntilNeed != -1 and the check below is true then add server
     if (pModel->getSimTime() - timeUntilNeed <=
