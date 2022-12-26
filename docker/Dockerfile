@@ -23,7 +23,7 @@ WORKDIR ${BASE_DIR}
 
 RUN git clone https://github.com/ChrisPetalotis/swim.git
 
-RUN python3.10 -m pip install -r swim/predictions/requirements.txt
+RUN python3.10 -m pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host=files.pythonhosted.org --no-cache-dir -r swim/predictions/requirements.txt
 
 RUN tar xzf swim/queueinglib.tgz
 
