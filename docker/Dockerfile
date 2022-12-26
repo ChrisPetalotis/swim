@@ -13,9 +13,7 @@ WORKDIR ${BASE_DIR}
 
 RUN git clone https://github.com/ChrisPetalotis/swim.git
 
-COPY ["./predictions/requirements.txt", "."]
-
-RUN pip install -r requirements.txt
+RUN pip install -r ./predictions/requirements.txt
 
 RUN tar xzf swim/queueinglib.tgz
 
