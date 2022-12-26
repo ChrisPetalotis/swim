@@ -84,23 +84,32 @@ Tactic *ProactiveAdaptationManager::evaluate() {
     return pMacroTactic;
 }
 
+// FIXME Work In Progress
 double predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate) {
     Py_Initialize();
 
     // which python function to call
-    PyObject *pFunc = PyObject_GetAttrString(pModule, "print_test");
+    PyObject *pFunc = PyObject_GetAttrString(pModule, "offline_predictions");
     if (pFunc && PyCallable_Check(pFunc)) {
-        PyObject *pArgs = PyTuple_New(2);
+        PyObject *pArgs = PyTuple_New(5);
+
+        PyObject *arima_p = PyFloat_FromDouble(ARIMA_P);
+        PyObject *arima_d = PyFloat_FromDouble(ARIMA_D);
+        PyObject *arima_q = PyFloat_FromDouble(ARIMA_Q);
         PyObject *pList1 = PyList_New(historyOfServiceTime.size());
         PyObject *pList2 = PyList_New(historyOfRequestRate.size());
+        PyOjbect *pNum_pred = PyLong_FromLong(10);
 
         for (size_t i = 0; i < historyOfServiceTime.size(); ++i)
             PyList_SetItem(pList1, i, PyFloat_FromDouble(historyOfServiceTime[i]));
         for (size_t i = 0; i < historyOfRequestRate.size(); ++i)
             PyList_SetItem(pList2, i, PyFloat_FromDouble(historyOfRequestRate[i]));
 
-        PyTuple_SetItem(pArgs, 0, pList1);
-        PyTuple_SetItem(pArgs, 1, pList2);
+        PyTuple_SetItem(pArgs, 0, arima_p);
+        PyTuple_SetItem(pArgs, 1, arima_d);
+        PyTuple_SetItem(pArgs, 2, arima_q);
+        PyTuple_SetItem(pArgs, 3, pList1);
+        PyTuple_SetItem(pArgs, 4, pNum_pred);
 
         PyObject *ret = PyObject_CallObject(pFunc, pArgs);
 
@@ -113,6 +122,12 @@ double predictFutureUtilization(vector<double> historyOfServiceTime, vector<doub
             fprintf(stderr, "Function return failed\n");
         }
 
+        // TODO now call with pList2
+
+        Py_DECREF(arima_p);
+        Py_DECREF(arima_d);
+        Py_DECREF(arima_q);
+        Py_DECREF(pNum_pred);
         Py_DECREF(ret);
         Py_DECREF(pList1);
         Py_DECREF(pList2);

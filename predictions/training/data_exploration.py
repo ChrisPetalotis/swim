@@ -144,6 +144,14 @@ def offline_predictions(config, data, no_predictions: int = 10):
 
     return predictions
 
+# From cpp
+def offline_predictions(arima_p, arima_d, arima_q, data, no_predictions):
+    train_df, test_df = get_train_test(data)
+    fitted_model = train_model(train_df, config)
+    predictions = fitted_model.forecast(steps=no_predictions)
+
+    return predictions
+
 
 def online_rmse(datasets: list[str], data_type: str):
     rmses = []

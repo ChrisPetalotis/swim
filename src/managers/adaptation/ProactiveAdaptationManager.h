@@ -3,6 +3,11 @@
 
 #include "BaseAdaptationManager.h"
 
+// TODO load from ini file
+#define ARIMA_P 0
+#define ARIMA_D 0
+#define ARIMA_Q 0
+
 class ProactiveAdaptationManager : public BaseAdaptationManager
 {
   protected:
