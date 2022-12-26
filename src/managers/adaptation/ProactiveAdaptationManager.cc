@@ -85,15 +85,20 @@ Tactic *ProactiveAdaptationManager::evaluate()
     { // current simTime - the future simtime for our forecast (multiple of 60sec(sim time cycle))
         if (pModel->getSimTime() - timeUntilNeed <= min(pModel->getBootDelay(), pModel->getEvaluationPeriod()))
         {
-            pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
+            // If timeUntilNeed != -1 and the check below is true then add server
+            if (pModel->getSimTime() - timeUntilNeed <=
+                min(pModel->getBootDelay(), pModel->getEvaluationPeriod()))
+            {
+                pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
+            }
+
+            return pMacroTactic;
         }
     }
-
-    return pMacroTactic;
 }
 
 // FIXME Work In Progress
-double predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate)
+void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate)
 {
     Py_Initialize();
 
@@ -125,8 +130,12 @@ double predictFutureUtilization(vector<double> historyOfServiceTime, vector<doub
 
         if (ret != NULL)
         {
-            double pred = PyFloat_AsDouble(ret);
+            double pred = PyFloat_AsDouble(ret); // list of doubles
             // std::cout << "Got " << pred << " back\n";
+
+            // Iterate over each value in the list
+            // if (predictedUtilisation > SU_THRESHOLD_UPPER) { // current simTime - the future simtime for our forecast (multiple of 60sec(sim time cycle))
+            // set timeUntilNeed + 1 to the position/index of the value in the list
             return pred;
         }
         else
@@ -158,6 +167,7 @@ double predictFutureUtilization(vector<double> historyOfServiceTime, vector<doub
 
 Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers)
 {
+    // reset timeUntilNeed to -1
     if (!isServerBooting && activeServers < maxServers)
     { // add server
         return AddServerTactic;
@@ -181,7 +191,6 @@ Tactic removeServer(bool isServerBooting, double dimmer, double dimmerStep, int 
         }
         else if (!isServerBooting && numberOfServers > 1)
         {
-            // remove server
             return RemoveServerTactic;
         }
     }

@@ -14,7 +14,7 @@ from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
 import pmdarima as pm
 
-data_types = {"arrivalRate": "avgArrivalRate", "avgServiceTime": "avgServerServiceTime"}
+data_types = {"arrivalRate": "avgArrivalRate", "serviceTime": "avgServerServiceTime"}
 
 configurations = list(itertools.product([0, 1, 2, 3], repeat=3))
 
@@ -155,7 +155,7 @@ def offline_predictions(arima_p, arima_d, arima_q, data, no_predictions):
 
 def online_rmse(datasets: list[str], data_type: str):
     rmses = []
-    for dataset in data_df:
+    for dataset in datasets:
         train_df, test_df = get_train_test(dataset)
 
         best_model = get_optimal_model(train_df, data_type)
@@ -185,10 +185,10 @@ def offline_model():
     RMSE for each dataset.
     """
     ds_arrival_rate = load_data("../../training_data", data_types["arrivalRate"])
-    ds_service_time = load_data("../../training_data", data_types["avgServiceTime"])
+    ds_service_time = load_data("../../training_data", data_types["serviceTime"])
 
     best_config_ar, best_rmse_ar = find_best_config(ds_arrival_rate, "arrivalRate")
-    best_config_st, best_rmse_st = find_best_config(ds_service_time, "avgServiceTime")
+    best_config_st, best_rmse_st = find_best_config(ds_service_time, "serviceTime")
 
     return {
         "arrival_rate": {"best_config": best_config_ar, "best_rmse": best_rmse_ar},
@@ -199,10 +199,10 @@ def offline_model():
 def online_model(data=None, no_predictions=None):
     if data == None:
         ds_arrival_rate = load_data("../../training_data", data_types["arrivalRate"])
-        ds_service_time = load_data("../../training_data", data_types["avgServiceTime"])
-
+        ds_service_time = load_data("../../training_data", data_types["serviceTime"])
+        
         best_config_ar, best_rmse_ar = online_rmse(ds_arrival_rate, "arrivalRate")
-        best_config_st, best_rmse_st = online_rmse(ds_service_time, "avgServiceTime")
+        best_config_st, best_rmse_st = online_rmse(ds_service_time, "serviceTime")
 
         return {
             "arrival_rate": {"best_config": best_config_ar, "best_rmse": best_rmse_ar},
@@ -217,4 +217,4 @@ if __name__ == "__main__":
     print(offline_model())
 
     print("\nResults using online model configuration:")
-    print(online_predictions())
+    print(online_model())
