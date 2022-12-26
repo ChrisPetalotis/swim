@@ -22,11 +22,11 @@ Define_Module(ProactiveAdaptationManager);
  *      -if dimmer < 1, increase dimmer else if servers > 1 and no server booting remove server
  */
 
-Tactic *ProactiveAdaptationManager::evaluate() {
+Tactic *ProactiveAdaptationManager::evaluate()
+{
     MacroTactic *pMacroTactic = new MacroTactic;
     Model *pModel = getModel();
-    const double dimmerStep = 1.0 / (pModel->getNumberOfDimmerLevels() - 1)
-    double dimmer = pModel->getDimmerFactor();
+    const double dimmerStep = 1.0 / (pModel->getNumberOfDimmerLevels() - 1) double dimmer = pModel->getDimmerFactor();
     double dimmer = pModel->getDimmerFactor();
     int activeServers = pModel->getActiveServers();
     int maxServers = getMaxServers->getMaxServers();
@@ -42,41 +42,49 @@ Tactic *ProactiveAdaptationManager::evaluate() {
 
     // Python file name
     PyObject *pModule = PyImport_ImportModule("data_exploration");
-    if (pModule == NULL) {
+    if (pModule == NULL)
+    {
         PyErr_Print();
         std::cerr << "PyImport_ImportModule call failed\n";
         exit(EXIT_FAILURE);
     }
 
-
     // This is reactive
-    if (spareUtilization > SU_THRESHOLD_UPPER) {
-        if (THRESHOLD_VIOLATION_UPPER >= 1) {
+    if (spareUtilization > SU_THRESHOLD_UPPER)
+    {
+        if (THRESHOLD_VIOLATION_UPPER >= 1)
+        {
             pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
             THRESHOLD_VIOLATION_UPPER = 0;
             THRESHOLD_VIOLATION_LOWER = 0;
-        } else {
+        }
+        else
+        {
             THRESHOLD_VIOLATION_UPPER++;
         }
-    } else if (spareUtilization < SU_THRESHOLD_LOWER) {
-        if (THRESHOLD_VIOLATION_LOWER >= 1) {
+    }
+    else if (spareUtilization < SU_THRESHOLD_LOWER)
+    {
+        if (THRESHOLD_VIOLATION_LOWER >= 1)
+        {
             pMacroTactic->addTactic(removeServer(isServerBooting, dimmer, dimmerStep, activeServers, spareUtilization));
             THRESHOLD_VIOLATION_LOWER = 0;
             THRESHOLD_VIOLATION_UPPER = 0;
-        } else {
+        }
+        else
+        {
             THRESHOLD_VIOLATION_LOWER++;
         }
     }
 
     // This is proactive
     // We should be getting the predictedUtilisation from python here
-    double predictedUtilisation = predictFutureUtilization(pModel->getServiceTimeHistory(),
-                                                           pModel->getEnvironment().arrivalRateHistory)
+    double predictedUtilisation = predictFutureUtilization(pModel->getServiceTimeHistory(), pModel->getEnvironment().arrivalRateHistory);
 
-    if (predictedUtilisation >
-        SU_THRESHOLD_UPPER) { // current simTime - the future simtime for our forecast (multiple of 60sec(sim time cycle))
-        if (pModel->getSimTime() - timeUntilNeed <=
-            min(pModel->getBootDelay(), pModel->getEvaluationPeriod())) {
+    if (predictedUtilisation > SU_THRESHOLD_UPPER)
+    { // current simTime - the future simtime for our forecast (multiple of 60sec(sim time cycle))
+        if (pModel->getSimTime() - timeUntilNeed <= min(pModel->getBootDelay(), pModel->getEvaluationPeriod()))
+        {
             pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
         }
     }
@@ -85,12 +93,14 @@ Tactic *ProactiveAdaptationManager::evaluate() {
 }
 
 // FIXME Work In Progress
-double predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate) {
+double predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate)
+{
     Py_Initialize();
 
     // which python function to call
     PyObject *pFunc = PyObject_GetAttrString(pModule, "offline_predictions");
-    if (pFunc && PyCallable_Check(pFunc)) {
+    if (pFunc && PyCallable_Check(pFunc))
+    {
         PyObject *pArgs = PyTuple_New(5);
 
         PyObject *arima_p = PyFloat_FromDouble(ARIMA_P);
@@ -113,11 +123,14 @@ double predictFutureUtilization(vector<double> historyOfServiceTime, vector<doub
 
         PyObject *ret = PyObject_CallObject(pFunc, pArgs);
 
-        if (ret != NULL) {
+        if (ret != NULL)
+        {
             double pred = PyFloat_AsDouble(ret);
             // std::cout << "Got " << pred << " back\n";
             return pred;
-        } else {
+        }
+        else
+        {
             PyErr_Print();
             fprintf(stderr, "Function return failed\n");
         }
@@ -132,7 +145,9 @@ double predictFutureUtilization(vector<double> historyOfServiceTime, vector<doub
         Py_DECREF(pList1);
         Py_DECREF(pList2);
         Py_DECREF(pArgs)
-    } else {
+    }
+    else
+    {
         PyErr_Print();
         fprintf(stderr, "Function call failed\n");
     }
@@ -141,22 +156,31 @@ double predictFutureUtilization(vector<double> historyOfServiceTime, vector<doub
     Py_Finalize();
 }
 
-Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers) {
-    if (!isServerBooting && activeServers < maxServers) { // add server
+Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers)
+{
+    if (!isServerBooting && activeServers < maxServers)
+    { // add server
         return AddServerTactic;
-    } else if (dimmer > 0.0) { // decrease dimmer
+    }
+    else if (dimmer > 0.0)
+    { // decrease dimmer
         dimmer = max(0.0, dimmer - dimmerStep);
         return SetDimmerTactic(dimmer);
     }
 }
 
-Tactic removeServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, double spareUilization) {
-    if (spareUilization > 1) {
-        if (dimmer < 1) {
+Tactic removeServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, double spareUilization)
+{
+    if (spareUilization > 1)
+    {
+        if (dimmer < 1)
+        {
             // increase dimmer;
             dimmer = min(1.0, dimmer + dimmerStep);
             SetDimmerTactic(dimmer);
-        } else if (!isServerBooting && numberOfServers > 1) {
+        }
+        else if (!isServerBooting && numberOfServers > 1)
+        {
             // remove server
             return RemoveServerTactic;
         }
