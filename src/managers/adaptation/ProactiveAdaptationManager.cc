@@ -37,7 +37,7 @@ Tactic *ProactiveAdaptationManager::evaluate() {
     // In order to find Python file
     PyObject *sys = PyImport_ImportModule("sys");
     PyObject *sys_path = PyObject_GetAttrString(sys, "path");
-    PyObject *folder_path = PyUnicode_FromString(".");
+    PyObject *folder_path = PyUnicode_FromString("../../"); // TODO check
     PyList_Append(sys_path, folder_path);
 
     // Python file name
