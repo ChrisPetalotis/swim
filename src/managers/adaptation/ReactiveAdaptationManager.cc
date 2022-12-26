@@ -2,13 +2,13 @@
  * Simulator of Web Infrastructure and Management
  * Copyright (c) 2016 Carnegie Mellon University.
  * All Rights Reserved.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE
  * MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTED BY LAW
  * ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT
  * LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
- *  
+ *
  * Released under a BSD license, please see license.txt for full terms.
  * DM-0003883
  *******************************************************************************/
@@ -31,32 +31,41 @@ Define_Module(ReactiveAdaptationManager);
  * - if RT < RTT and spare utilization > 1
  *      -if dimmer < 1, increase dimmer else if servers > 1 and no server booting remove server
  */
-Tactic* ReactiveAdaptationManager::evaluate() {
-    MacroTactic* pMacroTactic = new MacroTactic;
-    Model* pModel = getModel();
+Tactic *ReactiveAdaptationManager::evaluate()
+{
+    MacroTactic *pMacroTactic = new MacroTactic;
+    Model *pModel = getModel();
     const double dimmerStep = 1.0 / (pModel->getNumberOfDimmerLevels() - 1);
     double dimmer = pModel->getDimmerFactor();
-    double spareUtilization =  pModel->getConfiguration().getActiveServers() - pModel->getObservations().utilization;
+    double spareUtilization = pModel->getConfiguration().getActiveServers() - pModel->getObservations().utilization;
     bool isServerBooting = pModel->getServers() > pModel->getActiveServers();
     double responseTime = pModel->getObservations().avgResponseTime;
 
-    if (responseTime > RT_THRESHOLD) {
-        if (!isServerBooting
-                && pModel->getServers() < pModel->getMaxServers()) {
+    if (responseTime > RT_THRESHOLD)
+    {
+        if (!isServerBooting && pModel->getServers() < pModel->getMaxServers())
+        {
             pMacroTactic->addTactic(new AddServerTactic);
-        } else if (dimmer > 0.0) {
+        }
+        else if (dimmer > 0.0)
+        {
             dimmer = max(0.0, dimmer - dimmerStep);
             pMacroTactic->addTactic(new SetDimmerTactic(dimmer));
         }
-    } else if (responseTime < RT_THRESHOLD) { // can we increase dimmer or remove servers?
+    }
+    else if (responseTime < RT_THRESHOLD)
+    { // can we increase dimmer or remove servers?
 
         // only if there is more than one server of spare capacity
-        if (spareUtilization > 1) {
-            if (dimmer < 1.0) {
+        if (spareUtilization > 1)
+        {
+            if (dimmer < 1.0)
+            {
                 dimmer = min(1.0, dimmer + dimmerStep);
                 pMacroTactic->addTactic(new SetDimmerTactic(dimmer));
-            } else if (!isServerBooting
-                    && pModel->getServers() > 1) {
+            }
+            else if (!isServerBooting && pModel->getServers() > 1)
+            {
                 pMacroTactic->addTactic(new RemoveServerTactic);
             }
         }

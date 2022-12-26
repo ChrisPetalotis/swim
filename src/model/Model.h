@@ -2,13 +2,13 @@
  * Simulator of Web Infrastructure and Management
  * Copyright (c) 2016 Carnegie Mellon University.
  * All Rights Reserved.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE
  * MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTED BY LAW
  * ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT
  * LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
- *  
+ *
  * Released under a BSD license, please see license.txt for full terms.
  * DM-0003883
  *******************************************************************************/
@@ -18,51 +18,55 @@
 
 #include <omnetpp.h>
 #include <set>
+#include <vector>
 #include "Configuration.h"
 #include "Environment.h"
 #include "Observations.h"
 
-class Model : public omnetpp::cSimpleModule {
+class Model : public omnetpp::cSimpleModule
+{
 public:
-
     /*
      * there are some methods (e.g., removeExpectedChange() that do not check
      * the type of change, so if a new change type is added, those methods
      * would have to be fixed
      */
-    enum ModelChange { SERVER_ONLINE};
+    enum ModelChange
+    {
+        SERVER_ONLINE
+    };
 
-    struct ModelChangeEvent {
+    struct ModelChangeEvent
+    {
         double startTime; // when the event was created
-        double time; // when the event will happen
+        double time;      // when the event will happen
         ModelChange change;
     };
 
-    struct ModelChangeEventComp {
-      bool operator() (const ModelChangeEvent& lhs, const ModelChangeEvent& rhs) const {
-          return lhs.time < rhs.time;
-      }
+    struct ModelChangeEventComp
+    {
+        bool operator()(const ModelChangeEvent &lhs, const ModelChangeEvent &rhs) const
+        {
+            return lhs.time < rhs.time;
+        }
     };
     typedef std::multiset<ModelChangeEvent, ModelChangeEventComp> ModelChangeEvents;
 
 protected:
-    static const char* HORIZON_PAR;
-    virtual int numInitStages() const {return 2;}
+    static const char *HORIZON_PAR;
+    virtual int numInitStages() const { return 2; }
     virtual void initialize(int stage);
 
     ModelChangeEvents events;
-
 
     // these are used so that we can query the model for what happened an instant earlier
     // TODO save the configuration using a timestamp
     int activeServerCountLast;
     double timeActiveServerCountLast;
 
-
     double evaluationPeriod;
     double dimmerMargin; /**< the used range for the dimmer is [dimmerMargin, 1-dimmerMargin] */
     bool lowerDimmerMargin = false;
-
 
     // these hold the current configuration, plus the events for the booting server
     int activeServers; /**< number of active servers (there is one more powered up if a server is booting) */
@@ -79,6 +83,8 @@ protected:
     double lowFidelityServiceTime;
     double lowFidelityServiceTimeVariance;
     int numberOfBrownoutLevels;
+    vector<double> serviceTimeHistory;
+    double currentSimTime;
 
     void addExpectedChange(double time, ModelChange change);
 
@@ -94,12 +100,12 @@ protected:
 public:
     Model();
 
-
     /* the following methods are less general */
 
     /**
      * Returns the expected number of active servers at a time in the future
      */
+
     int getActiveServerCountIn(double deltaTime);
     int const getActiveServers() const;
     int const getServers() const;
@@ -109,13 +115,14 @@ public:
     void removeServer();
 
     Configuration getConfiguration();
-    const Environment& getEnvironment() const;
-    virtual void setEnvironment(const Environment& environment);
-    const Observations& getObservations() const;
-    void setObservations(const Observations& observations);
+    const Environment &getEnvironment() const;
+    virtual void setEnvironment(const Environment &environment);
+    const Observations &getObservations() const;
+    void setObservations(const Observations &observations);
     int getMaxServers() const;
     double getEvaluationPeriod() const;
     double getBootDelay() const;
+    double getSimTime() const;
     int getHorizon() const;
 
     double getLowFidelityServiceTime() const;
@@ -124,7 +131,8 @@ public:
     void setServerThreads(int serverThreads);
     double getServiceTime() const;
     void setServiceTime(double serviceTimeMean, double serviceTimeVariance);
-
+    void updateServiceTimeHistory(double serviceTimeMean);
+    vector<double> getServiceTimeHistory();
     double getLowFidelityServiceTimeVariance() const;
     double getServiceTimeVariance() const;
 
