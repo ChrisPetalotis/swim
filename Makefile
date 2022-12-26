@@ -10,7 +10,7 @@ cleanall: checkmakefiles
 	rm -f src/Makefile
 
 makefiles:
-	cd src && opp_makemake -f --deep -o swim -I. -Imodel/pladaptMock -I../../queueinglib -I/usr/include/python3.5m/ -L../libs -L../../queueinglib/ -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread -lpython3.5m
+	cd src && opp_makemake -f --deep -o swim -I. -Imodel/pladaptMock -I../../queueinglib -I/usr/include/python3.10/ -L../libs -L../../queueinglib/ -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread -lpython3.10
 checkmakefiles:
 	@if [ ! -f src/Makefile ]; then \
 	echo; \
