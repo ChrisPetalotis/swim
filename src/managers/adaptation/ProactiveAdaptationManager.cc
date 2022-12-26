@@ -2,6 +2,7 @@
 #include "managers/adaptation/UtilityScorer.h"
 #include "managers/execution/AllTactics.h"
 #include <string>
+#include <Python.h>
 
 using namespace std;
 
@@ -32,6 +33,21 @@ Tactic *ProactiveAdaptationManager::evaluate()
   bool isServerBooting = pModel->getServers() > pModel->getActiveServers();
   bool isServerRemoving = pModel->getServers() < pModel->getActiveServers();
   double spareUtilization = pModel->getConfiguraiton().getActiveServers() - pModel->getObservations().utilization;
+
+  // In order to find Python file
+  PyObject *sys = PyImport_ImportModule("sys");
+  PyObject *sys_path = PyObject_GetAttrString(sys, "path");
+  PyObject *folder_path = PyUnicode_FromString(".");
+  PyList_Append(sys_path, folder_path);
+
+  // Python file name
+  PyObject *pModule = PyImport_ImportModule("data_exploration");
+  if (pModule == NULL) {
+    PyErr_Print();
+    std::cerr << "PyImport_ImportModule call failed\n";
+    exit(EXIT_FAILURE);
+  }
+
 
   // This is reactive
   if (spareUtilization > SU_THRESHOLD_UPPER)
@@ -79,12 +95,45 @@ Tactic *ProactiveAdaptationManager::evaluate()
 
 double predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate)
 {
-  // TODO Call Python function
+  Py_Initialize();
 
-  // Set variable TIME_UNTIL_NEED to the number of evaluation periods in the future in which the server is going to be needed.
-  // Then in every cycle decrease the variable by one and when the value is equal to the time the server needs to fully
-  // spawn / 60, then add a tactic to spawn a new server.
-  // Start checking in the current cycle
+  // which python function to call
+  PyObject *pFunc = PyObject_GetAttrString(pModule, "print_test");
+  if (pFunc && PyCallable_Check(pFunc)) {
+    PyObject *pArgs = PyTuple_New(2);
+    PyObject *pList1 = PyList_New(historyOfServiceTime.size());
+    PyObject *pList2 = PyList_New(historyOfRequestRate.size());
+
+    for (size_t i = 0; i < historyOfServiceTime.size(); ++i)
+      PyList_SetItem(pList1, i, PyFloat_FromDouble(historyOfServiceTime[i]));
+    for (size_t i = 0; i < historyOfRequestRate.size(); ++i)
+      PyList_SetItem(pList2, i, PyFloat_FromDouble(historyOfRequestRate[i]));
+
+    PyTuple_SetItem(pArgs, 0, pList1);
+    PyTuple_SetItem(pArgs, 1, pList2);
+
+    PyObject *ret = PyObject_CallObject(pFunc, pArgs);
+
+    if (ret != NULL) {
+      double pred = PyFloat_AsDouble(ret);
+      // std::cout << "Got " << pred << " back\n";
+      return pred;
+    } else {
+      PyErr_Print();
+      fprintf(stderr, "Function return failed\n");
+    }
+
+    Py_DECREF(ret);
+    Py_DECREF(pList1);
+    Py_DECREF(pList2);
+    Py_DECREF(pArgs)
+  } else {
+    PyErr_Print();
+    fprintf(stderr, "Function call failed\n");
+  }
+
+  // TODO DECREF?
+  Py_Finalize();
 }
 
 Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers)
