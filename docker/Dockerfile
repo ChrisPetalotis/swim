@@ -13,7 +13,9 @@ RUN apt update -y && apt upgrade -y && \
     ./configure --enable-optimizations && \
     make altinstall
 
-RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.10
+RUN curl http://bootstrap.pypa.io/get-pip.py | python3.10
+
+RUN apt-get -y install python3-pip
 
 ENV BASE_DIR=${HOME}/seams-swim
 
@@ -22,7 +24,7 @@ WORKDIR ${BASE_DIR}
 
 RUN git clone https://github.com/ChrisPetalotis/swim.git
 
-RUN pip install -r ./predictions/requirements.txt
+RUN python3.10 -m pip install -r swim/predictions/requirements.txt
 
 RUN tar xzf swim/queueinglib.tgz
 
