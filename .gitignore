@@ -3,4 +3,4 @@
 /out/
 /gcc-debug/
 .idea
-predictions/training/venv
+predictions/venv
