@@ -137,15 +137,19 @@ def find_best_config(datasets: list[str], data_type: str):
     return best_config, best_rmse
 
 
-def offline_predictions(config, data, no_predictions: int = 10):
-    train_df, test_df = get_train_test(data)
-    fitted_model = train_model(train_df, config)
-    predictions = fitted_model.forecast(steps=no_predictions)
+# def offline_predictions(config, data, no_predictions: int = 10):
+#     train_df, test_df = get_train_test(data_df)
+#     fitted_model = train_model(train_df, config)
+#     predictions = fitted_model.forecast(steps=no_predictions)
 
-    return predictions
+#     return predictions
+
 
 # From cpp
 def offline_predictions(arima_p, arima_d, arima_q, data, no_predictions):
+    config = (arima_p, arima_d, arima_q)
+    data_df = pd.DataFrame(data, columns=["history"])
+
     train_df, test_df = get_train_test(data)
     fitted_model = train_model(train_df, config)
     predictions = fitted_model.forecast(steps=no_predictions)
@@ -172,8 +176,9 @@ def online_rmse(datasets: list[str], data_type: str):
 
 
 def online_predictions(data, no_predictions: int = 10):
-    train_df, test_df = get_train_test(dataset)
-    best_model = get_optimal_model(train_df, data_type)
+    data_df = pd.DataFrame(data, columns=["history"])
+    train_df, test_df = get_train_test(data_df)
+    best_model = get_optimal_model(train_df)
     predictions = best_model.predict(no_predictions, return_conf_int=True)
 
     return predictions
@@ -200,7 +205,7 @@ def online_model(data=None, no_predictions=None):
     if data == None:
         ds_arrival_rate = load_data("../../training_data", data_types["arrivalRate"])
         ds_service_time = load_data("../../training_data", data_types["serviceTime"])
-        
+
         best_config_ar, best_rmse_ar = online_rmse(ds_arrival_rate, "arrivalRate")
         best_config_st, best_rmse_st = online_rmse(ds_service_time, "serviceTime")
 
@@ -208,8 +213,6 @@ def online_model(data=None, no_predictions=None):
             "arrival_rate": {"best_config": best_config_ar, "best_rmse": best_rmse_ar},
             "service_time": {"best_config": best_config_st, "best_rmse": best_rmse_st},
         }
-    else:
-        return online_predictions(data, no_predictions)
 
 
 if __name__ == "__main__":

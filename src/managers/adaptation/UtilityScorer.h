@@ -24,11 +24,6 @@
 #define SU_THRESHOLD_UPPER omnetpp::getSimulation()->getSystemModule()->par("utilisationThresholdUpper").doubleValue()
 #define SU_THRESHOLD_LOWER omnetpp::getSimulation()->getSystemModule()->par("utilisationThresholdLower").doubleValue()
 
-#define THRESHOLD_VIOLATION_UPPER 0
-#define THRESHOLD_VIOLATION_LOWER 0
-
-#define TIME_UNTIL_NEED
-
 /*
  * MAX_SERVICE_RATE is the max number of requests/sec a single server can
  * process with normal service.
