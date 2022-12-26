@@ -22,6 +22,13 @@ Define_Module(ProactiveAdaptationManager);
  *      -if dimmer < 1, increase dimmer else if servers > 1 and no server booting remove server
  */
 
+/*
+(\_/)
+(=.=)
+(")(")
+
+(. Y .)
+*/
 Tactic *ProactiveAdaptationManager::evaluate()
 {
     MacroTactic *pMacroTactic = new MacroTactic;

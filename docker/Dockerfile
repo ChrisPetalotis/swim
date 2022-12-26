@@ -4,7 +4,16 @@ LABEL Description="Docker image for SWIM"
 USER root
 RUN apt update && apt install -y --no-install-recommends libboost-all-dev git r-base r-cran-reshape r-cran-ggplot2 r-cran-rsqlite evince ristretto nano curl python3-dev
 
-RUN curl -fsSL https://bootstrap.pypa.io/pip/pip-22.3.pyz | python3.10
+RUN apt update -y && apt upgrade -y && \
+    apt-get install -y wget build-essential checkinstall  libreadline-gplv2-dev  libncursesw5-dev  libssl-dev  libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev && \
+    cd /usr/src && \
+    wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz && \
+    tar xzf Python-3.10.9.tgz && \
+    cd Python-3.10.9 && \
+    ./configure --enable-optimizations && \
+    make altinstall
+
+RUN curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3.10
 
 ENV BASE_DIR=${HOME}/seams-swim
 
