@@ -2,13 +2,13 @@
  * Simulator of Web Infrastructure and Management
  * Copyright (c) 2016 Carnegie Mellon University.
  * All Rights Reserved.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE
  * MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTED BY LAW
  * ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT
  * LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
- *  
+ *
  * Released under a BSD license, please see license.txt for full terms.
  * DM-0003883
  *******************************************************************************/
@@ -21,8 +21,13 @@
 
 #define RT_THRESHOLD omnetpp::getSimulation()->getSystemModule()->par("responseTimeThreshold").doubleValue()
 
-#define SU_UPPER_THRESHOLD 
-#define SU_LOWER_THRESHOLD 
+#define SU_THRESHOLD_UPPER omnetpp::getSimulation()->getSystemModule()->par("utilisationThresholdUpper").doubleValue()
+#define SU_THRESHOLD_LOWER omnetpp::getSimulation()->getSystemModule()->par("utilisationThresholdLower").doubleValue()
+
+#define THRESHOLD_VIOLATION_UPPER 0
+#define THRESHOLD_VIOLATION_LOWER 0
+
+#define TIME_UNTIL_NEED
 
 /*
  * MAX_SERVICE_RATE is the max number of requests/sec a single server can
@@ -30,19 +35,19 @@
  */
 #define MAX_SERVICE_RATE omnetpp::getSimulation()->getSystemModule()->par("maxServiceRate").doubleValue()
 
-class UtilityScorer {
+class UtilityScorer
+{
 protected:
-    UtilityScorer() {}; // no instances
+    UtilityScorer(){}; // no instances
 
-    static const char* OPT_REVENUE;
-    static const char* PENALTY_MULTIPLIER;
+    static const char *OPT_REVENUE;
+    static const char *PENALTY_MULTIPLIER;
 
 public:
-
     /**
      * Computes utility accrued
      */
-    static double getAccruedUtility(const Model& model, const Configuration& configuration, const Environment& environment, const Observations& observations);
+    static double getAccruedUtility(const Model &model, const Configuration &configuration, const Environment &environment, const Observations &observations);
 };
 
 #endif /* UTILITYSCORER_H_ */

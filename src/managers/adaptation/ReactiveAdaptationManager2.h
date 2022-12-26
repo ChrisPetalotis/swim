@@ -28,3 +28,34 @@ class ReactiveAdaptationManager2 : public BaseAdaptationManager
 };
 
 #endif
+
+
+Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, int maxServers)
+{
+    if (!isServerBooting && activeServers < maxServers)
+    { // add server
+        return AddServerTactic;
+    }
+    else if (dimmer > 0.0)
+    { // decrease dimmer
+        dimmer = max(0.0, dimmer - dimmerStep);
+        return SetDimmerTactic(dimmer);
+    }
+}
+Tactic removeServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, double spareUilization)
+{
+    if (spareUilization > 1)
+    {
+        if (dimmer < 1)
+        {
+            // increase dimmer;
+            dimmer = min(1.0, dimmer + dimmerStep);
+            SetDimmerTactic(dimmer);
+        }
+        else if (!isServerBooting && numberOfServers > 1)
+        {
+            // remove server
+            return RemoveServerTactic;
+        }
+    }
+}

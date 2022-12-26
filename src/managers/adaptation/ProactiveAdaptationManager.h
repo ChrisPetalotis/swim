@@ -7,13 +7,9 @@ class ProactiveAdaptationManager : public BaseAdaptationManager
 {
   protected:
     virtual Tactic* evaluate();
-  
-  public:
-    static int thresholdViolationUpper = 0
-    static int thresholdViolationLower = 0
-
-    void AddServer(const bool isServerBooting, const int numberOfServers, const int maxServers)
-    void RemoveServer(const bool isServerBooting, const double dimmer, const double spareUtilisation, const int numberOfServers)
+    double predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate);
+    Tactic* addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers);
+    Tactic* removeServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, double spareUilization);
 };
 
 #endif
