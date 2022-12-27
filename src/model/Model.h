@@ -132,7 +132,7 @@ public:
     double getServiceTime() const;
     void setServiceTime(double serviceTimeMean, double serviceTimeVariance);
     void updateServiceTimeHistory(double serviceTimeMean);
-    vector<double> getServiceTimeHistory();
+    std::vector<double> getServiceTimeHistory();
     double getLowFidelityServiceTimeVariance() const;
     double getServiceTimeVariance() const;
 
