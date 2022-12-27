@@ -100,6 +100,36 @@ Tactic *ProactiveAdaptationManager::evaluate()
 // FIXME Work In Progress
 void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate)
 {
+    std::vector<double> avgServiceTimeVals;
+    double serviceTimeSum = 0;
+    std::vector<double> avgRequestRateVals;
+    double requestRateSum = 0;
+
+    for (size_t i = 0; i < historyOfServiceTime.size(); ++i)
+    {
+        if (i % 60 == 0)
+        {
+            avgServiceTimeVals.push_back(serviceTimeSum / 60);
+            serviceTimeSum = 0;
+        }
+        else
+        {
+            serviceTimeSum = serviceTimeSum + historyOfServiceTime[i];
+        }
+    }
+    for (size_t i = 0; i < historyOfRequestRate.size(); ++i)
+    {
+        if (i % 60 == 0)
+        {
+            avgRequestRateVals.push_back(requestRateSum / 60);
+            requestRateSum = 0;
+        }
+        else
+        {
+            requestRateSum = requestRateSum + historyOfRequestRate[i];
+        }
+    }
+
     Py_Initialize();
 
     PyObject *pFunc = PyObject_GetAttrString(pModule, "offline_predictions");
@@ -110,14 +140,14 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
         PyObject *arima_p = PyLong_FromLong(ARIMA_P);
         PyObject *arima_d = PyLong_FromLong(ARIMA_D);
         PyObject *arima_q = PyLong_FromLong(ARIMA_Q);
-        PyObject *pList1 = PyList_New(historyOfServiceTime.size());
-        PyObject *pList2 = PyList_New(historyOfRequestRate.size());
+        PyObject *pList1 = PyList_New(avgServiceTimeVals.size());
+        PyObject *pList2 = PyList_New(avgRequestRateVals.size());
         PyOjbect *pNum_pred = PyLong_FromLong(10);
 
-        for (size_t i = 0; i < historyOfServiceTime.size(); ++i)
-            PyList_SetItem(pList1, i, PyFloat_FromDouble(historyOfServiceTime[i]));
-        for (size_t i = 0; i < historyOfRequestRate.size(); ++i)
-            PyList_SetItem(pList2, i, PyFloat_FromDouble(historyOfRequestRate[i]));
+        for (size_t i = 0; i < avgServiceTimeVals.size(); ++i)
+            PyList_SetItem(pList1, i, PyFloat_FromDouble(avgServiceTimeVals[i]));
+        for (size_t i = 0; i < avgRequestRateVals.size(); ++i)
+            PyList_SetItem(pList2, i, PyFloat_FromDouble(avgRequestRateVals[i]));
 
         PyTuple_SetItem(pArgs, 0, arima_p);
         PyTuple_SetItem(pArgs, 1, arima_d);
@@ -132,15 +162,15 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
 
         if (predServiceTime != NULL && predRequestRate != NULL)
         {
-            std::vector<double> serviceTimeVals;
-            std::vector<double> requestRateVals;
+            std::vector<double> predictedServiceTimeVals;
+            std::vector<double> predictedRequestRateVals;
 
             if (PyList_Check(predServiceTime))
             {
                 for (Py_ssize_t i = 0; i < PyList_Size(predServiceTime); ++i)
                 {
                     PyObject *next = PyList_GetItem(predServiceTime, i);
-                    serviceTimeVals.push_back(PyFloat_AsDouble(next));
+                    predictedServiceTimeVals.push_back(PyFloat_AsDouble(next));
                 }
             }
             else
@@ -149,12 +179,12 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
                 return;
             }
 
-            if (PyList_Check(requestRateVals))
+            if (PyList_Check(predictedRequestRateVals))
             {
-                for (Py_ssize_t i = 0; i < PyList_Size(requestRateVals); ++i)
+                for (Py_ssize_t i = 0; i < PyList_Size(predictedRequestRateVals); ++i)
                 {
-                    PyObject *next = PyList_GetItem(requestRateVals, i);
-                    requestRateVals.push_back(PyFloat_AsDouble(next));
+                    PyObject *next = PyList_GetItem(predictedRequestRateVals, i);
+                    predictedRequestRateVals.push_back(PyFloat_AsDouble(next));
                 }
             }
             else
@@ -163,9 +193,9 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
                 return;
             }
 
-            for (size_t i = 0; i < serviceTimeVals.size(); ++i)
+            for (size_t i = 0; i < predictedServiceTimeVals.size(); ++i)
             {
-                double predictedUtilisation = serviceTimeVals[i] * requestRateVals[i];
+                double predictedUtilisation = predictedServiceTimeVals[i] * predictedRequestRateVals[i];
                 if (predictedUtilisation > SU_THRESHOLD_UPPER)
                 {
 
