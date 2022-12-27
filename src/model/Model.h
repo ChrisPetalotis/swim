@@ -83,7 +83,7 @@ protected:
     double lowFidelityServiceTime;
     double lowFidelityServiceTimeVariance;
     int numberOfBrownoutLevels;
-    vector<double> serviceTimeHistory;
+    std::vector<double> serviceTimeHistory;
     double currentSimTime;
 
     void addExpectedChange(double time, ModelChange change);

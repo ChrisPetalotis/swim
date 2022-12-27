@@ -2,13 +2,13 @@
  * Simulator of Web Infrastructure and Management
  * Copyright (c) 2016 Carnegie Mellon University.
  * All Rights Reserved.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE
  * MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTED BY LAW
  * ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT
  * LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
- *  
+ *
  * Released under a BSD license, please see license.txt for full terms.
  * DM-0003883
  *******************************************************************************/
@@ -25,15 +25,15 @@
  */
 class BaseAdaptationManager : public omnetpp::cSimpleModule
 {
-    omnetpp::simsignal_t decisionTimeSignal;
-    Model* pModel;
+  omnetpp::simsignal_t decisionTimeSignal;
+  Model *pModel;
 
 protected:
-    omnetpp::cMessage *periodEvent; // pointer to the event object which we'll use for timing
-    omnetpp::cMessage *decisionCompleteEvent; // event for notifying of decision completion
-  Tactic* pTactic;
+  omnetpp::cMessage *periodEvent;           // pointer to the event object which we'll use for timing
+  omnetpp::cMessage *decisionCompleteEvent; // event for notifying of decision completion
+  Tactic *pTactic;
 
-  virtual int numInitStages() const {return 2;}
+  virtual int numInitStages() const { return 2; }
   virtual void initialize(int stage);
   virtual void handleMessage(omnetpp::cMessage *msg);
 
@@ -42,7 +42,7 @@ protected:
    */
   virtual void decisionComplete();
 
-  inline Model* getModel() { return pModel; }
+  inline Model *getModel() { return pModel; }
 
   /**
    * Adaptation decision implementation
@@ -50,7 +50,7 @@ protected:
    * @return Tactic* (possibly a MacroTactic*) or null if none must be executed.
    *   Deletion of the tactic object is done by the caller of this method.
    */
-  virtual Tactic* evaluate() = 0;
+  virtual Tactic *evaluate() = 0;
 
 public:
   BaseAdaptationManager();

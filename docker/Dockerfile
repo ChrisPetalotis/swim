@@ -17,6 +17,8 @@ RUN curl http://bootstrap.pypa.io/get-pip.py | python3.10
 
 RUN apt-get -y install python3-pip
 
+RUN python3.10 -m pip --version
+
 RUN apt-get install -y --no-install-recommends ca-certificates
 
 RUN update-ca-certificates
@@ -29,7 +31,7 @@ WORKDIR ${BASE_DIR}
 RUN git clone https://github.com/ChrisPetalotis/swim.git
 
 
-RUN python3.10 -m pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r swim/predictions/requirements.txt
+# RUN python3.10 -m pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r swim/predictions/requirements.txt
 
 RUN tar xzf swim/queueinglib.tgz
 

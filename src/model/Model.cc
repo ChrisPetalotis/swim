@@ -304,7 +304,7 @@ void Model::updateServiceTimeHistory(double serviceTimeMean)
     this->serviceTimeHistory.push_back(serviceTimeMean);
 }
 
-vector<double> Model::getServiceTimeHistory()
+std::vector<double> Model::getServiceTimeHistory()
 {
     return this->serviceTimeHistory;
 }

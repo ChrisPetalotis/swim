@@ -32,7 +32,7 @@ public:
     void setArrivalMean(double arrivalMean);
     double getArrivalVariance() const;
     void setArrivalVariance(double arrivalVariance);
-    vector<double> arrivalRateHistory;
+    std::vector<double> arrivalRateHistory;
     virtual double asDouble() const;
 };
 
