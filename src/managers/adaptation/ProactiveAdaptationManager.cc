@@ -26,8 +26,6 @@ Define_Module(ProactiveAdaptationManager);
 (\_/)
 (=.=)
 (")(")
-
-(. Y .)
 */
 Tactic *ProactiveAdaptationManager::evaluate()
 {
@@ -58,30 +56,30 @@ Tactic *ProactiveAdaptationManager::evaluate()
     }
 
     // This is reactive
-    if (spareUtilization > SU_THRESHOLD_UPPER)
+    if (spareUtilization > pModel.SU_THRESHOLD_UPPER)
     {
-        if (THRESHOLD_VIOLATION_UPPER >= 1)
+        if (pModel.THRESHOLD_VIOLATION_UPPER >= 1)
         {
             pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
-            THRESHOLD_VIOLATION_UPPER = 0;
-            THRESHOLD_VIOLATION_LOWER = 0;
+            pModel.THRESHOLD_VIOLATION_UPPER = 0;
+            pModel.THRESHOLD_VIOLATION_LOWER = 0;
         }
         else
         {
-            THRESHOLD_VIOLATION_UPPER++;
+            pModel.THRESHOLD_VIOLATION_UPPER++;
         }
     }
     else if (spareUtilization < SU_THRESHOLD_LOWER)
     {
-        if (THRESHOLD_VIOLATION_LOWER >= 1)
+        if (pModel.THRESHOLD_VIOLATION_LOWER >= 1)
         {
             pMacroTactic->addTactic(removeServer(isServerBooting, dimmer, dimmerStep, activeServers, spareUtilization));
-            THRESHOLD_VIOLATION_LOWER = 0;
-            THRESHOLD_VIOLATION_UPPER = 0;
+            pModel.THRESHOLD_VIOLATION_LOWER = 0;
+            pModel.THRESHOLD_VIOLATION_UPPER = 0;
         }
         else
         {
-            THRESHOLD_VIOLATION_LOWER++;
+            pModel.THRESHOLD_VIOLATION_LOWER++;
         }
     }
 
@@ -90,7 +88,7 @@ Tactic *ProactiveAdaptationManager::evaluate()
     predictFutureUtilization(pModel->getServiceTimeHistory(), pModel->getEnvironment().arrivalRateHistory);
 
     // If timeUntilNeed != -1 and the check below is true then add server
-    if (pModel->getSimTime() - timeUntilNeed <=
+    if (pModel->getSimTime() - pModel.TIME_UNTIL_NEED <=
         min(pModel->getBootDelay(), pModel->getEvaluationPeriod()))
     {
         pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
@@ -170,7 +168,10 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
                 double predictedUtilisation = serviceTimeVals[i] * requestRateVals[i];
                 if (predictedUtilisation > SU_THRESHOLD_UPPER)
                 {
-                    timeUntilNeed = i + 1;
+
+                    //[0,   1,    2,    3,    4,    5]
+                    // currentSimTime = 900+[960, 1020, 1080, 1120, 1180, 1240]
+                    pModel->setTimeUntilServerIsNeeded(i + 1);
                 }
             }
         }

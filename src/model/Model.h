@@ -86,6 +86,10 @@ protected:
     std::vector<double> serviceTimeHistory;
     double currentSimTime;
 
+    int THRESHOLD_VIOLATION_UPPER = 0;
+    int THRESHOLD_VIOLATION_LOWER = 0;
+    int TIME_UNTIL_NEED = -1;
+
     void addExpectedChange(double time, ModelChange change);
 
     /**
@@ -138,6 +142,17 @@ public:
 
     void setDimmerFactor(double factor);
     double getDimmerFactor() const;
+
+    int getThresholdViolationUpper() const;
+    void increaseThresholdViolationUpper();
+    void decreaseThresholdViolationUpper();
+
+    int getThresholdViolationLower() const;
+    void increaseThresholdViolationLower();
+    void decreaseThresholdViolationLower();
+
+    int getTimeUntilServerIsNeeded() const;
+    void setTimeUntilServerIsNeeded(int time);
 
     /**
      * Returns true if dimmer margin is only used at the bottom of the range

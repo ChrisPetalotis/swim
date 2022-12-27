@@ -418,3 +418,38 @@ double Model::getDimmerMargin() const
 {
     return dimmerMargin;
 }
+
+int Model::getThresholdViolationUpper() const
+{
+    return
+}
+void Model::increaseThresholdViolationUpper()
+{
+    this->THRESHOLD_VIOLATION_UPPER++;
+}
+void Model::decreaseThresholdViolationUpper()
+{
+    this->THRESHOLD_VIOLATION_UPPER--;
+}
+
+int Model::getThresholdViolationLower() const
+{
+    return
+}
+void Model::increaseThresholdViolationLower()
+{
+    this->THRESHOLD_VIOLATION_LOWER++;
+}
+void Model::decreaseThresholdViolationLower()
+{
+    this->THRESHOLD_VIOLATION_LOWER--;
+}
+
+int Model::getTimeUntilServerIsNeeded() const
+{
+    return this->TIME_UNTIL_NEED;
+}
+void Model::setTimeUntilServerIsNeeded(int time)
+{
+    this->TIME_UNTIL_NEED = time;
+}
