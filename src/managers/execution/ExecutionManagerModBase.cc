@@ -2,13 +2,13 @@
  * Simulator of Web Infrastructure and Management
  * Copyright (c) 2016 Carnegie Mellon University.
  * All Rights Reserved.
- *  
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS," WITH NO WARRANTIES WHATSOEVER. CARNEGIE
  * MELLON UNIVERSITY EXPRESSLY DISCLAIMS TO THE FULLEST EXTENT PERMITTED BY LAW
  * ALL EXPRESS, IMPLIED, AND STATUTORY WARRANTIES, INCLUDING, WITHOUT
  * LIMITATION, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
  * PURPOSE, AND NON-INFRINGEMENT OF PROPRIETARY RIGHTS.
- *  
+ *
  * Released under a BSD license, please see license.txt for full terms.
  * DM-0003883
  *******************************************************************************/
@@ -16,42 +16,47 @@
 #include <sstream>
 #include <cstdlib>
 
-
 using namespace std;
 using namespace omnetpp;
 
-const char* ExecutionManagerModBase::SIG_SERVER_REMOVED = "serverRemoved";
-const char* ExecutionManagerModBase::SIG_SERVER_ADDED = "serverAdded";
-const char* ExecutionManagerModBase::SIG_SERVER_ACTIVATED = "serverActivated";
-const char* ExecutionManagerModBase::SIG_BROWNOUT_SET = "brownoutSet";
+const char *ExecutionManagerModBase::SIG_SERVER_REMOVED = "serverRemoved";
+const char *ExecutionManagerModBase::SIG_SERVER_ADDED = "serverAdded";
+const char *ExecutionManagerModBase::SIG_SERVER_ACTIVATED = "serverActivated";
+const char *ExecutionManagerModBase::SIG_BROWNOUT_SET = "brownoutSet";
 
-
-ExecutionManagerModBase::ExecutionManagerModBase() : serverRemoveInProgress(0), testMsg(0) {
+ExecutionManagerModBase::ExecutionManagerModBase() : serverRemoveInProgress(0), testMsg(0)
+{
 }
 
-void ExecutionManagerModBase::initialize() {
-    pModel = check_and_cast<Model*> (getParentModule()->getSubmodule("model"));
+void ExecutionManagerModBase::initialize()
+{
+    pModel = check_and_cast<Model *>(getParentModule()->getSubmodule("model"));
     serverRemovedSignal = registerSignal(SIG_SERVER_REMOVED);
     serverAddedSignal = registerSignal(SIG_SERVER_ADDED);
     serverActivatedSignal = registerSignal(SIG_SERVER_ACTIVATED);
     brownoutSetSignal = registerSignal(SIG_BROWNOUT_SET);
-//    testMsg = new cMessage;
-//    testMsg->setKind(0);
-//    scheduleAt(simTime() + 1, testMsg);
+    //    testMsg = new cMessage;
+    //    testMsg->setKind(0);
+    //    scheduleAt(simTime() + 1, testMsg);
 }
 
-void ExecutionManagerModBase::handleMessage(cMessage* msg) {
-    if (msg == testMsg) {
-        if (msg->getKind() == 0) {
+void ExecutionManagerModBase::handleMessage(cMessage *msg)
+{
+    if (msg == testMsg)
+    {
+        if (msg->getKind() == 0)
+        {
             addServer();
             msg->setKind(1);
             scheduleAt(simTime() + 31, msg);
-        } else {
+        }
+        else
+        {
             removeServer();
         }
         return;
     }
-    BootComplete* bootComplete = check_and_cast<BootComplete *>(msg);
+    BootComplete *bootComplete = check_and_cast<BootComplete *>(msg);
 
     doAddServerBootComplete(bootComplete);
 
@@ -68,27 +73,32 @@ void ExecutionManagerModBase::handleMessage(cMessage* msg) {
     pendingMessages.erase(it);
 }
 
-ExecutionManagerModBase::~ExecutionManagerModBase() {
-    for (BootCompletes::iterator it = pendingMessages.begin(); it != pendingMessages.end(); ++it) {
+ExecutionManagerModBase::~ExecutionManagerModBase()
+{
+    for (BootCompletes::iterator it = pendingMessages.begin(); it != pendingMessages.end(); ++it)
+    {
         cancelAndDelete(*it);
     }
     cancelAndDelete(testMsg);
 }
 
-void ExecutionManagerModBase::addServer() {
+void ExecutionManagerModBase::addServer()
+{
     cout << "t=" << simTime() << " executing addServer()" << endl;
     addServerLatencyOptional();
 }
 
-void ExecutionManagerModBase::addServerLatencyOptional(bool instantaneous) {
+void ExecutionManagerModBase::addServerLatencyOptional(bool instantaneous)
+{
     Enter_Method("addServer()");
     int serverCount = pModel->getServers();
     ASSERT(serverCount < pModel->getMaxServers());
 
-    BootComplete* bootComplete = doAddServer(instantaneous);
+    BootComplete *bootComplete = doAddServer(instantaneous);
 
     double bootDelay = 0;
-    if (!instantaneous) {
+    if (!instantaneous)
+    {
         bootDelay = omnetpp::getSimulation()->getSystemModule()->par("bootDelay");
         cout << "adding server with latency=" << bootDelay << endl;
     }
@@ -97,14 +107,18 @@ void ExecutionManagerModBase::addServerLatencyOptional(bool instantaneous) {
     emit(serverAddedSignal, true);
 
     pendingMessages.insert(bootComplete);
-    if (bootDelay == 0) {
+    if (bootDelay == 0)
+    {
         handleMessage(bootComplete);
-    } else {
-        scheduleAt(simTime() + bootDelay, bootComplete);
+    }
+    else
+    {
+        scheduleAt(simTime() + bootDelay + pModel->getTimeUntilServerIsNeeded, bootComplete);
     }
 }
 
-void ExecutionManagerModBase::removeServer() {
+void ExecutionManagerModBase::removeServer()
+{
     Enter_Method("removeServer()");
     cout << "t=" << simTime() << " executing removeServer()" << endl;
     int serverCount = pModel->getServers();
@@ -113,11 +127,13 @@ void ExecutionManagerModBase::removeServer() {
     ASSERT(serverRemoveInProgress == 0); // removing a server while another is being removed not supported yet
 
     serverRemoveInProgress++;
-    BootComplete* pBootComplete = doRemoveServer();
+    BootComplete *pBootComplete = doRemoveServer();
 
     // cancel boot complete event if needed
-    for (BootCompletes::iterator it = pendingMessages.begin(); it != pendingMessages.end(); ++it) {
-        if ((*it)->getModuleId() == pBootComplete->getModuleId()) {
+    for (BootCompletes::iterator it = pendingMessages.begin(); it != pendingMessages.end(); ++it)
+    {
+        if ((*it)->getModuleId() == pBootComplete->getModuleId())
+        {
             cancelAndDelete(*it);
             pendingMessages.erase(it);
             break;
@@ -126,7 +142,8 @@ void ExecutionManagerModBase::removeServer() {
     delete pBootComplete;
 }
 
-void ExecutionManagerModBase::setBrownout(double factor) {
+void ExecutionManagerModBase::setBrownout(double factor)
+{
     Enter_Method("setBrownout()");
     cout << "t=" << simTime() << " executing setDimmer(" << 1.0 - factor << ")" << endl;
     pModel->setBrownoutFactor(factor);
@@ -134,7 +151,8 @@ void ExecutionManagerModBase::setBrownout(double factor) {
     emit(brownoutSetSignal, true);
 }
 
-void ExecutionManagerModBase::notifyRemoveServerCompleted(const char* serverId) {
+void ExecutionManagerModBase::notifyRemoveServerCompleted(const char *serverId)
+{
 
     pModel->removeServer();
     serverRemoveInProgress--;

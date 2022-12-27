@@ -54,6 +54,8 @@ Tactic *ProactiveAdaptationManager::evaluate()
         std::cerr << "PyImport_ImportModule call failed\n";
         exit(EXIT_FAILURE);
     }
+    // Reactive server spawn time set if needed
+    pModel->setTimeUntilServerIsNeeded(0);
 
     // This is reactive
     if (spareUtilization > pModel.SU_THRESHOLD_UPPER)
@@ -85,20 +87,17 @@ Tactic *ProactiveAdaptationManager::evaluate()
 
     // This is proactive
     // We should be getting the predictedUtilisation from python here
-    predictFutureUtilization(pModel->getServiceTimeHistory(), pModel->getEnvironment().arrivalRateHistory);
-
-    // If timeUntilNeed != -1 and the check below is true then add server
-    if (pModel->getSimTime() - pModel.TIME_UNTIL_NEED <=
-        min(pModel->getBootDelay(), pModel->getEvaluationPeriod()))
-    {
-        pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
-    }
+    predictFutureUtilization(pModel->getServiceTimeHistory(), pModel->getEnvironment().arrivalRateHistory, pModel, pMacroTactic);
 
     return pMacroTactic;
 }
 
-// FIXME Work In Progress
-void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate)
+void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate, Model *pModel, MacrpTactic *pMacroTactic)
+    Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers)
+        Tactic removeServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, double spareUilization)
+
+    // FIXME Work In Progress
+    void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate, Model *pModel, MacrpTactic *pMacroTactic)
 {
     std::vector<double> avgServiceTimeVals;
     double serviceTimeSum = 0;
@@ -179,11 +178,11 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
                 return;
             }
 
-            if (PyList_Check(predictedRequestRateVals))
+            if (PyList_Check(predRequestRate))
             {
-                for (Py_ssize_t i = 0; i < PyList_Size(predictedRequestRateVals); ++i)
+                for (Py_ssize_t i = 0; i < PyList_Size(predRequestRate); ++i)
                 {
-                    PyObject *next = PyList_GetItem(predictedRequestRateVals, i);
+                    PyObject *next = PyList_GetItem(predRequestRate, i);
                     predictedRequestRateVals.push_back(PyFloat_AsDouble(next));
                 }
             }
@@ -198,10 +197,12 @@ void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double
                 double predictedUtilisation = predictedServiceTimeVals[i] * predictedRequestRateVals[i];
                 if (predictedUtilisation > SU_THRESHOLD_UPPER)
                 {
-
-                    //[0,   1,    2,    3,    4,    5]
-                    // currentSimTime = 900+[960, 1020, 1080, 1120, 1180, 1240]
-                    pModel->setTimeUntilServerIsNeeded(i + 1);
+                    pModel->setTimeUntilServerIsNeeded(i * 60 != 0 ? i * 60 : 60 - pModel->getBootDelay());
+                    if (pModel->getTimeUntilServerIsNeeded() <= min(pModel->getBootDelay(), pModel->getEvaluationPeriod()))
+                    {
+                        pMacroTactic->addTactic(addServer(isServerBooting, dimmer, dimmerStep, activeServers, maxServers));
+                    }
+                    break;
                 }
             }
         }
@@ -232,6 +233,7 @@ Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int act
     // reset timeUntilNeed to -1
     if (!isServerBooting && activeServers < maxServers)
     { // add server
+
         return AddServerTactic;
     }
     else if (dimmer > 0.0)
