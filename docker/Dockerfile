@@ -17,7 +17,9 @@ RUN curl http://bootstrap.pypa.io/get-pip.py | python3.10
 
 RUN apt-get -y install python3-pip
 
-RUN python3.10 -m pip --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org install --upgrade pip
+RUN apt-get install -y --no-install-recommends ca-certificates
+
+RUN update-ca-certificates
 
 ENV BASE_DIR=${HOME}/seams-swim
 
