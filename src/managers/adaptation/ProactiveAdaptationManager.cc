@@ -2,7 +2,7 @@
 #include "managers/adaptation/UtilityScorer.h"
 #include "managers/execution/AllTactics.h"
 #include <string>
-#include <Python.h>
+#include <python3.10/Python.h>
 
 using namespace std;
 

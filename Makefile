@@ -9,8 +9,8 @@ cleanall: checkmakefiles
 	cd src && $(MAKE) MODE=debug clean
 	rm -f src/Makefile
 
-makefiles:
-	cd src && opp_makemake -f --deep -o swim -I. -Imodel/pladaptMock -I../../queueinglib $$(python3.10-config --embed --ldflags) -L../libs -L../../queueinglib/ -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread -lpython3.10
+makefiles:	
+	cd src && opp_makemake -f --deep -o swim -I. -Imodel/pladaptMock -I../../queueinglib $$(python3.10-config --cflags) -L../libs -L../../queueinglib/ -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread $$(python3.10-config --embed --ldflags)
 checkmakefiles:
 	@if [ ! -f src/Makefile ]; then \
 	echo; \
