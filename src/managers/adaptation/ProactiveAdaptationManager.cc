@@ -92,12 +92,8 @@ Tactic *ProactiveAdaptationManager::evaluate()
     return pMacroTactic;
 }
 
+// FIXME Work In Progress
 void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate, Model *pModel, MacrpTactic *pMacroTactic)
-    Tactic addServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, const int maxServers)
-        Tactic removeServer(bool isServerBooting, double dimmer, double dimmerStep, int activeServers, double spareUilization)
-
-    // FIXME Work In Progress
-    void predictFutureUtilization(vector<double> historyOfServiceTime, vector<double> historyOfRequestRate, Model *pModel, MacrpTactic *pMacroTactic)
 {
     std::vector<double> avgServiceTimeVals;
     double serviceTimeSum = 0;
